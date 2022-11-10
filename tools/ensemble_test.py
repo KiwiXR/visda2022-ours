@@ -222,12 +222,8 @@ def main():
     # build the dataloader
     # TODO: support multiple images per gpu (only minor changes are needed)
     if args.val:
-        if args.separate_eval is not None:
-            cfgs[0].data.val['separate_eval'] = args.separate_eval
         dataset = build_dataset(cfgs[0].data.val)
     else:
-        if args.separate_eval is not None:
-            cfgs[0].data.test['separate_eval'] = args.separate_eval
         dataset = build_dataset(cfgs[0].data.test)
     data_loader = build_dataloader(
         dataset,
