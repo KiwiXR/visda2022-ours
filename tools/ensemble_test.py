@@ -291,7 +291,7 @@ def main():
             args.show_dir,
             False,
             args.opacity,
-            pre_eval=args.eval is not None and not eval_on_format_results,
+            pre_eval=False,  # args.eval is not None and not eval_on_format_results,
             format_only=args.format_only or eval_on_format_results,
             ensemble_policy=EnsemblePolicy.get_p_by_name(args.ensemble_policy),
             format_args=eval_kwargs)
