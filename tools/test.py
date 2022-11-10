@@ -20,6 +20,8 @@ def update_legacy_cfg(cfg):
     # The saved json config does not differentiate between list and tuple
     cfg.data.test.pipeline[1]['img_scale'] = tuple(
         cfg.data.test.pipeline[1]['img_scale'])
+    cfg.data.val.pipeline[1]['img_scale'] = tuple(
+        cfg.data.val.pipeline[1]['img_scale'])
     # Support legacy checkpoints
     if cfg.model.decode_head.type == 'UniHead':
         cfg.model.decode_head.type = 'DAFormerHead'
@@ -51,6 +53,7 @@ def parse_args():
     parser.add_argument('--launcher', choices=['none', 'pytorch', 'slurm', 'mpi'], default='none', help='job launcher')
     parser.add_argument('--opacity', type=float, default=0.5,
                         help='Opacity of painted segmentation map. In (0, 1] range.')
+    parser.add_argument('--val', action='store_true', help='eval on validation set')
     parser.add_argument('--local_rank', type=int, default=0)
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
@@ -98,7 +101,10 @@ def main():
 
     # build the dataloader
     # TODO: support multiple images per gpu (only minor changes are needed)
-    dataset = build_dataset(cfg.data.test)
+    if args.val:
+        dataset = build_dataset(cfg.data.val)
+    else:
+        dataset = build_dataset(cfg.data.test)
     data_loader = build_dataloader(
         dataset,
         samples_per_gpu=1,
