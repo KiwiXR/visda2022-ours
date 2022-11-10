@@ -27,6 +27,8 @@ def update_legacy_cfg(cfg):
     # The saved json config does not differentiate between list and tuple
     cfg.data.test.pipeline[1]['img_scale'] = tuple(
         cfg.data.test.pipeline[1]['img_scale'])
+    cfg.data.val.pipeline[1]['img_scale'] = tuple(
+        cfg.data.val.pipeline[1]['img_scale'])
     # Support legacy checkpoints
     if cfg.model.decode_head.type == 'UniHead':
         cfg.model.decode_head.type = 'DAFormerHead'
@@ -119,6 +121,7 @@ def parse_args():
         choices=EnsemblePolicy.list_all_p(),
         help='Ensemble policy for multi-model ensemble.'
     )
+    parser.add_argument('--val', action='store_true', help='eval on validation set')
     parser.add_argument('--local_rank', type=int, default=0)
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
@@ -218,7 +221,14 @@ def main():
 
     # build the dataloader
     # TODO: support multiple images per gpu (only minor changes are needed)
-    dataset = build_dataset(cfgs[0].data.test)
+    if args.val:
+        if args.separate_eval is not None:
+            cfgs[0].data.val['separate_eval'] = args.separate_eval
+        dataset = build_dataset(cfgs[0].data.val)
+    else:
+        if args.separate_eval is not None:
+            cfgs[0].data.test['separate_eval'] = args.separate_eval
+        dataset = build_dataset(cfgs[0].data.test)
     data_loader = build_dataloader(
         dataset,
         samples_per_gpu=1,
